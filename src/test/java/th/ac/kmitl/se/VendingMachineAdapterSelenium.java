@@ -20,12 +20,13 @@ public class VendingMachineAdapterSelenium extends ExecutionContext {
     WebDriver driver;
     static final float PRICE_TUM_THAI = 100.0f;
     static final float PRICE_TUM_POO = 120.0f;
-
+    int numpaymentcheck=0;
     @BeforeExecution
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
         driver.get("https://fekmitl.pythonanywhere.com/kratai-bin");
+
     }
 
     @AfterExecution
@@ -181,6 +182,33 @@ public class VendingMachineAdapterSelenium extends ExecutionContext {
         driver.findElement(By.name("btn_pay")).click();
     }
 
+
+    @Vertex() //self-made
+    public void PaymentTimeCheck(){
+        System.out.println("Vertext PaymentCheck");
+        new WebDriverWait(driver, Duration.ofSeconds(5))
+                .until(ExpectedConditions.elementToBeClickable(By.tagName("img")));
+        //Check if it's already more than three retries.
+
+        System.out.println("Number of retries: "+numpaymentcheck);
+        if(numpaymentcheck<3){
+            System.out.println("Retrying");
+        }
+        else{
+            System.out.println("Redirecting back to welcome");
+        }
+        numpaymentcheck++;
+    }
+    @Edge() //self-made
+    public void StillCanPay(){
+        System.out.println("Edge StillCanPay");
+    }
+    @Edge() //self-made
+    public void CantPayAnymore(){
+        System.out.println("Edge CantPayAnymore");
+    }
+
+
     @Vertex()
     public void ERROR_PAY() {
         System.out.println("Vertex ERROR_PAY");
@@ -189,6 +217,7 @@ public class VendingMachineAdapterSelenium extends ExecutionContext {
     @Edge()
     public void payRetry() {
         System.out.println("Edge payRetry");
+        PaymentTimeCheck();
     }
 
     @Vertex()
